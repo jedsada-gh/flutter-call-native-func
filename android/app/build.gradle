@@ -27,7 +27,7 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     namespace "com.example.my_flutter_application"
-    compileSdkVersion flutter.compileSdkVersion
+    compileSdk localProperties.getProperty('flutter.compileSdk').toInteger()
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -48,8 +48,8 @@ android {
         applicationId "com.example.my_flutter_application"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
+        minSdk localProperties.getProperty('flutter.minSdk').toInteger()
+        targetSdk localProperties.getProperty('flutter.targetSdk').toInteger()
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -69,4 +69,17 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    implementation 'com.karumi:dexter:6.2.3'
+
+    implementation 'com.google.android.gms:play-services-vision:20.1.3'
+    implementation 'com.google.mlkit:face-detection:16.1.5'
+    implementation 'com.google.android.gms:play-services-mlkit-face-detection:17.1.0'
+
+    implementation 'com.google.code.gson:gson:2.10.1'
 }
+
+apply plugin: 'com.google.gms.google-services'

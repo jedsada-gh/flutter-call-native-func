@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:developer';
 
 void main() {
   runApp(const MyApp());
@@ -36,15 +36,34 @@ class _MyHomePageState extends State<MyHomePage> {
   int _resultNumber = 0;
   String _resultEventNumber = "0";
 
-  static const _channel =
-      MethodChannel('com.example.my_flutter_application/random_number');
+  static const _bridgeChannel =
+      MethodChannel("com.example.my_flutter_application/bridge_native");
   // ignore: constant_identifier_names
-  static const RANDOM_NUMBER_METHOD_NAME = 'getRandomNumber';
+  static const RANDOM_NUMBER_METHOD = 'getRandomNumber';
+  static const NAVIGATE_TO_FACE_DETECTION_PAGE_METHOD =
+      "navigateToFaceDetectionPage";
   static const _eventChannel =
       EventChannel('com.example.my_flutter_application/event');
 
   // ignore: avoid_init_to_null
   late StreamSubscription? _streamSubscription = null;
+
+  _MyHomePageState() {
+    _bridgeChannel.setMethodCallHandler(methodHandler);
+  }
+
+  Future<void> methodHandler(MethodCall call) async {
+    switch (call.method) {
+      case "enableEventReceiver":
+        _enableEventReceiver();
+        break;
+      case "disableEventReceiver":
+        _disableEventReceiver();
+        break;
+      default:
+        print('no method handler for method ${call.method}');
+    }
+  }
 
   void _showToast(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -58,10 +77,20 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _enableEventReceiver() async {
     _streamSubscription =
         _eventChannel.receiveBroadcastStream().listen((event) {
-      setState(() {
-        _resultEventNumber = "$event";
-      });
+      Map<String, dynamic> data = jsonDecode(event);
+
+      String eventName = data["name"];
+      dynamic eventData = data["data"];
+
+      if (eventName == "randomNumber") {
+        setState(() {
+          _resultEventNumber = "$eventData";
+        });
+      } else if (eventName == "faceDetection") {
+        print("Result: $eventData");
+      }
     }, onError: (error) {
+      print('Received error: ${error.message}');
       setState(() {
         _resultEventNumber = 'Received error: ${error.message}';
       });
@@ -80,15 +109,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _getRandomNumber() async {
     try {
-      final int result = await _channel.invokeMethod(RANDOM_NUMBER_METHOD_NAME);
+      final int result =
+          await _bridgeChannel.invokeMethod(RANDOM_NUMBER_METHOD);
       setState(() {
         _resultNumber = result;
       });
     } on PlatformException catch (e) {
-      log("error: ${e.message}");
+      print("error: ${e.message}");
       setState(() {
         _resultNumber = 0;
       });
+    }
+  }
+
+  Future<void> _navigateToFaceDetectionPage() async {
+    try {
+      await _bridgeChannel.invokeMethod(NAVIGATE_TO_FACE_DETECTION_PAGE_METHOD);
+    } on PlatformException catch (e) {
+      print("error: ${e.message}");
     }
   }
 
@@ -141,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             MaterialStateProperty.all<Color>(Colors.deepPurple),
                       ),
                       onPressed: _enableEventReceiver,
-                      child: const Text('Start event with native'),
+                      child: const Text('Start listener'),
                     ),
                     TextButton(
                       style: ButtonStyle(
@@ -150,10 +188,21 @@ class _MyHomePageState extends State<MyHomePage> {
                           side: MaterialStateProperty.all<BorderSide>(
                               const BorderSide(color: Colors.deepPurple))),
                       onPressed: _disableEventReceiver,
-                      child: const Text('Stop event with native'),
+                      child: const Text('Stop listener'),
                     )
                   ],
                 )),
+            Container(
+                padding: const EdgeInsets.all(16), child: const Divider()),
+            TextButton(
+              style: ButtonStyle(
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                backgroundColor:
+                    MaterialStateProperty.all<Color>(Colors.deepPurple),
+              ),
+              onPressed: _navigateToFaceDetectionPage,
+              child: const Text('Face Detection'),
+            ),
           ],
         ),
       ),
