@@ -38,11 +38,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
   static const _channel =
       MethodChannel('com.example.my_flutter_application/random_number');
-  static const method_random_number = 'getRandomNumber';
+  // ignore: constant_identifier_names
+  static const RANDOM_NUMBER_METHOD_NAME = 'getRandomNumber';
   static const _eventChannel =
       EventChannel('com.example.my_flutter_application/event');
 
-  late StreamSubscription? _streamSubscription;
+  // ignore: avoid_init_to_null
+  late StreamSubscription? _streamSubscription = null;
+
+  void _showToast(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(milliseconds: 300),
+      ),
+    );
+  }
 
   Future<void> _enableEventReceiver() async {
     _streamSubscription =
@@ -59,17 +70,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _disableEventReceiver() async {
     if (_streamSubscription != null) {
+      _showToast("The listener event has been successfully stopped");
       _streamSubscription?.cancel();
       _streamSubscription = null;
-      setState(() {
-        _resultNumber = 0;
-      });
+    } else {
+      _showToast("Not found any events to listener");
     }
   }
 
   Future<void> _getRandomNumber() async {
     try {
-      final int result = await _channel.invokeMethod(method_random_number);
+      final int result = await _channel.invokeMethod(RANDOM_NUMBER_METHOD_NAME);
       setState(() {
         _resultNumber = result;
       });
@@ -106,18 +117,19 @@ class _MyHomePageState extends State<MyHomePage> {
                     MaterialStateProperty.all<Color>(Colors.deepPurple),
               ),
               onPressed: _getRandomNumber,
-              child: Text('Call native func'),
+              child: const Text('Call native func'),
             ),
-            Container(padding: EdgeInsets.all(16), child: Divider()),
+            Container(
+                padding: const EdgeInsets.all(16), child: const Divider()),
             const Text(
               'Result number of event:',
             ),
             Text(
-              '$_resultEventNumber',
+              _resultEventNumber,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -129,7 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             MaterialStateProperty.all<Color>(Colors.deepPurple),
                       ),
                       onPressed: _enableEventReceiver,
-                      child: Text('Start event with native'),
+                      child: const Text('Start event with native'),
                     ),
                     TextButton(
                       style: ButtonStyle(
@@ -138,7 +150,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           side: MaterialStateProperty.all<BorderSide>(
                               const BorderSide(color: Colors.deepPurple))),
                       onPressed: _disableEventReceiver,
-                      child: Text('Stop event with native'),
+                      child: const Text('Stop event with native'),
                     )
                   ],
                 )),
