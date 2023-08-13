@@ -1,16 +1,18 @@
-# my_flutter_application
+# Demo Flutter Application
 
-A new Flutter project.
+This project serves as a proof of concept (POC) for demonstrating how to establish communication between native code components.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Please create a file named `local.properties` in the root android folder and copy the provided configuration in order to run the application.
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+flutter.compileSdk=33
+flutter.minSdk=24
+flutter.targetSdk=33
+flutter.buildMode=debug
+flutter.versionName=1.0.0
+flutter.versionCode=1
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+**Happy Coding ♥️**
